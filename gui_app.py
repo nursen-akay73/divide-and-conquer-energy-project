@@ -148,7 +148,7 @@ if run:
     # ----------------------------
     # Sekmeler: tablo / grafik / yorum
     # ----------------------------
-    tab1, tab2, tab3 = st.tabs(["📋 Sonuç Tablosu", "📊 Grafikler", "📝 yorum"])
+    tab1, tab2, tab3 = st.tabs(["📋 Sonuç Tablosu", "📊 Grafikler", "📝 Yorum"])
 
     with tab1:
         st.dataframe(df_show, use_container_width=True)

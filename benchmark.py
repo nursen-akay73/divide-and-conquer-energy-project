@@ -15,7 +15,15 @@ Amaç:
 """
 
 import time
-from codecarbon import EmissionsTracker
+
+# CodeCarbon açıldığında macOS'ta powermetrics çağırır ve sudo ister.
+# Şifre istemesinin sebebi budur  ENABLE_CODECARBON = False kalsın.
+ENABLE_CODECARBON = False
+
+if ENABLE_CODECARBON:
+    from codecarbon import EmissionsTracker
+else:
+    EmissionsTracker = None
 
 # Kendi yazdığımız algoritma ve sayaç yapısını içe aktarıyoruz
 from algorithms import Counters, generate_array, mergesort, quicksort
@@ -42,14 +50,19 @@ def run_single_experiment(n: int, mode: str, repetitions: int = 5):
     quick_comp_total = 0
     quick_assign_total = 0
 
+    tracker = None
+    energy_joule = None
+    emissions_kg = None
+
     # CodeCarbon: Bu (n, mode) senaryosunun tüm repetitions çalışmasını kapsasın
-    tracker = EmissionsTracker(
-        project_name=f"DivideConquer_{mode}_{n}",
-        measure_power_secs=1,
-        log_level="error",
-        save_to_file=False,
-    )
-    tracker.start()
+    if ENABLE_CODECARBON and EmissionsTracker is not None:
+        tracker = EmissionsTracker(
+            project_name=f"DivideConquer_{mode}_{n}",
+            measure_power_secs=1,
+            log_level="error",
+            save_to_file=False,
+        )
+        tracker.start()
 
     for _ in range(repetitions):
         # Her deney için aynı senaryoya uygun dizi üret
@@ -78,12 +91,13 @@ def run_single_experiment(n: int, mode: str, repetitions: int = 5):
         quick_assign_total += c_quick.assignments
 
     # Tracker stop: MUTLAKA for döngüsünün DIŞINDA olmalı
-    emissions_kg = tracker.stop()
+    if tracker is not None:
+        emissions_kg = tracker.stop()
 
-    # CodeCarbon bazı sürümlerde energy_consumed (kWh) bilgisini final_emissions_data içinde tutar
-    data = getattr(tracker, "final_emissions_data", None)
-    energy_kwh = getattr(data, "energy_consumed", None) if data is not None else None
-    energy_joule = (energy_kwh * 3_600_000) if energy_kwh is not None else None  # 1 kWh = 3.6e6 J
+        # CodeCarbon bazı sürümlerde energy_consumed (kWh) bilgisini final_emissions_data içinde tutar
+        data = getattr(tracker, "final_emissions_data", None)
+        energy_kwh = getattr(data, "energy_consumed", None) if data is not None else None
+        energy_joule = (energy_kwh * 3_600_000) if energy_kwh is not None else None  # 1 kWh = 3.6e6 J
 
     # Ortalamalar (ms cinsinden süre)
     merge_avg_time_ms = (merge_time_total / repetitions) * 1000.0

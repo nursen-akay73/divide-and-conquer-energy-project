@@ -60,13 +60,11 @@ python algorithms.py
 ```bash
 python benchmark.py
 ```
-
 ## Hızlı düzeltme: codecarbon eksik hatası
 GUI çalıştırırken `ModuleNotFoundError: codecarbon` alırsan, proje klasöründe venv açıkken şu komutları sırayla çalıştır:
 ```bash
-cd /Users/nursenakay/Desktop/divide-and-conquer-energy-project
 source .venv/bin/activate   # açıksa sorun olmaz
-python -m pip install --upgrade pip
+ppython -m pip install --upgrade pip
 python -m pip install codecarbon
 streamlit run gui_app.py
 ```
